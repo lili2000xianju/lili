@@ -1,0 +1,744 @@
+凰命深宫_神农篇.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>凰命深宫 · 神农篇</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#15100c; color:#e8dcc4; font-family:"Songti SC","STSong","SimSun",serif; min-height:100vh; }
+  .screen { display:none; min-height:100vh; }
+  .screen.active { display:block; }
+  /* ---------- 标题屏 ---------- */
+  #title-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 20px;
+    background:radial-gradient(ellipse at 50% 30%, #3a2417 0%, #15100c 70%); }
+  #title-screen h1 { font-size:44px; letter-spacing:14px; color:#d8b96f; text-shadow:0 0 30px rgba(216,185,111,.4); margin-bottom:8px; }
+  #title-screen h2 { font-size:18px; letter-spacing:8px; color:#a08c5a; font-weight:normal; margin-bottom:50px; }
+  .btn { background:linear-gradient(180deg,#4a3a22,#2c1f14); border:1px solid #8a6f3a; color:#e8dcc4; font-family:inherit;
+    font-size:16px; padding:10px 28px; margin:8px; cursor:pointer; letter-spacing:4px; transition:.2s; }
+  .btn:hover:not(:disabled) { background:#5a4025; color:#ffe9b0; box-shadow:0 0 12px rgba(216,185,111,.35); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn.small { font-size:13px; padding:6px 14px; letter-spacing:2px; }
+  .btn.danger { border-color:#8a3a3a; }
+  /* ---------- 序章 ---------- */
+  #intro-screen { display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .intro-box { max-width:640px; background:rgba(30,22,14,.9); border:1px solid #6a5426; padding:36px 40px; line-height:2; font-size:16px; }
+  .intro-box .sys { color:#9fd49f; font-size:14px; }
+  /* ---------- 游戏主界面 ---------- */
+  header { display:flex; align-items:center; gap:14px; padding:10px 16px; background:#241a10; border-bottom:1px solid #6a5426; flex-wrap:wrap; }
+  header .gtitle { color:#d8b96f; font-size:18px; letter-spacing:6px; }
+  header .meta { color:#bfa876; font-size:14px; }
+  header .meta b { color:#ffe9b0; }
+  .layout { display:flex; gap:12px; padding:12px; max-width:1280px; margin:0 auto; align-items:flex-start; }
+  aside { background:#20180f; border:1px solid #554322; padding:12px; }
+  #left-panel { width:220px; flex-shrink:0; }
+  #right-panel { width:280px; flex-shrink:0; }
+  main#scene-panel { flex:1; min-width:300px; background:#1c150d; border:1px solid #554322; padding:16px; min-height:520px; }
+  h3.ptitle { color:#d8b96f; font-size:15px; letter-spacing:3px; border-bottom:1px solid #554322; padding-bottom:6px; margin-bottom:10px; }
+  .stat-row { display:flex; justify-content:space-between; font-size:14px; padding:3px 0; color:#cbb98f; }
+  .stat-row b { color:#ffe9b0; }
+  .bar { height:8px; background:#0e0a06; border:1px solid #554322; margin:4px 0 8px; }
+  .bar i { display:block; height:100%; background:linear-gradient(90deg,#7a5a22,#d8b96f); }
+  .loc-name { font-size:20px; color:#ffe9b0; letter-spacing:4px; margin-bottom:4px; }
+  .loc-desc { font-size:14px; color:#a89876; line-height:1.9; margin-bottom:14px; border-bottom:1px dashed #554322; padding-bottom:10px; }
+  .actions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  #log { background:#120d08; border:1px solid #3d3018; padding:10px; height:180px; overflow-y:auto; font-size:13px; line-height:1.8; }
+  #log p { margin-bottom:4px; color:#b3a284; }
+  #log p.sys { color:#9fd49f; }
+  #log p.warn { color:#d98c8c; }
+  #log p.good { color:#d8c98f; }
+  .tabs { display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap; }
+  .tab-btn { background:#2c2013; border:1px solid #554322; color:#bfa876; font-size:13px; padding:5px 10px; cursor:pointer; font-family:inherit; }
+  .tab-btn.on { background:#5a4025; color:#ffe9b0; }
+  .tab-content { font-size:13px; line-height:1.8; max-height:420px; overflow-y:auto; }
+  .quest { border:1px solid #4a3a1c; padding:8px; margin-bottom:8px; background:#181209; }
+  .quest .qname { color:#ffe9b0; font-size:14px; }
+  .quest .qdesc { color:#a89876; font-size:12px; margin-top:4px; }
+  .quest.done { opacity:.55; }
+  .item-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dashed #3d3018; }
+  .shop-item { border:1px solid #4a3a1c; padding:8px; margin-bottom:8px; background:#181209; }
+  .shop-item .sname { color:#ffe9b0; }
+  .mapbtn { display:block; width:100%; text-align:left; margin-bottom:6px; }
+  /* ---------- 弹窗 ---------- */
+  #modal-mask { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:50; align-items:center; justify-content:center; padding:20px; }
+  #modal-mask.show { display:flex; }
+  #modal { max-width:560px; width:100%; background:#241a10; border:1px solid #8a6f3a; padding:28px 30px; }
+  #modal h3 { color:#d8b96f; letter-spacing:4px; margin-bottom:14px; }
+  #modal .mtext { font-size:15px; line-height:2; color:#e0d3b3; margin-bottom:20px; white-space:pre-line; }
+  #modal .sys { color:#9fd49f; }
+  #modal .choices { display:flex; flex-direction:column; gap:8px; }
+  #modal .choices .btn { text-align:left; letter-spacing:1px; }
+  /* ---------- 结局 ---------- */
+  #end-screen { display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .end-box { max-width:600px; background:#241a10; border:1px solid #8a6f3a; padding:40px; text-align:center; }
+  .end-box h1 { font-size:32px; letter-spacing:8px; margin-bottom:20px; }
+  .end-box.death h1 { color:#c05a5a; }
+  .end-box.win h1 { color:#d8b96f; }
+  .end-box p { line-height:2.1; font-size:15px; text-align:left; color:#d8cba6; margin-bottom:10px; }
+  @media (max-width:900px){ .layout{flex-direction:column;} #left-panel,#right-panel{width:100%;} }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- ============ 标题屏 ============ -->
+<div id="title-screen" class="screen active">
+  <h1>凰命深宫</h1>
+  <h2>· 神农篇 ·</h2>
+  <p style="color:#a08c5a;margin-bottom:30px;font-size:14px;letter-spacing:2px;">后宫里最锋利的武器，是一把锄头。</p>
+  <button class="btn" id="btn-new">新的开始</button><br>
+  <button class="btn" id="btn-continue">继续游戏</button><br>
+  <button class="btn" id="btn-help0">玩法说明</button>
+</div>
+
+<!-- ============ 序章 ============ -->
+<div id="intro-screen" class="screen">
+  <div class="intro-box" id="intro-text"></div>
+</div>
+
+<!-- ============ 游戏主界面 ============ -->
+<div id="game-screen" class="screen">
+  <header>
+    <span class="gtitle">凰命深宫</span>
+    <span class="meta">第 <b id="h-day">1</b> 日 · <b id="h-phase">早</b>时</span>
+    <span class="meta">积分 <b id="h-points">0</b> · 银两 <b id="h-silver">0</b> 两</span>
+    <span style="flex:1"></span>
+    <button class="btn small" id="btn-save">存档</button>
+    <button class="btn small" id="btn-help">说明</button>
+    <button class="btn small danger" id="btn-quit">回标题</button>
+  </header>
+  <div class="layout">
+    <aside id="left-panel">
+      <h3 class="ptitle">沈 蘅</h3>
+      <div class="stat-row"><span>体质</span><b id="s-hp"></b></div>
+      <div class="bar"><i id="b-hp"></i></div>
+      <div class="stat-row"><span>容貌</span><b>72</b></div>
+      <div class="stat-row"><span>心机</span><b>45</b></div>
+      <div class="stat-row"><span>才情</span><b>68</b></div>
+      <div class="stat-row"><span>农艺</span><b style="color:#d8b96f">85</b></div>
+      <div class="stat-row"><span>圣宠</span><b id="s-favor"></b></div>
+      <div class="stat-row"><span>皇后好感</span><b id="s-queen"></b></div>
+      <div class="stat-row"><span>容儿好感</span><b id="s-rong"></b></div>
+      <div class="stat-row"><span>银两</span><b id="s-silver"></b></div>
+      <div class="stat-row"><span>积分</span><b id="s-points"></b></div>
+    </aside>
+    <main id="scene-panel">
+      <div class="loc-name" id="loc-name"></div>
+      <div class="loc-desc" id="loc-desc"></div>
+      <div class="actions" id="actions"></div>
+      <div id="log"></div>
+    </main>
+    <aside id="right-panel">
+      <div class="tabs">
+        <button class="tab-btn on" data-tab="quest">任务</button>
+        <button class="tab-btn" data-tab="bag">背包</button>
+        <button class="tab-btn" data-tab="shop">商城</button>
+        <button class="tab-btn" data-tab="rong">容儿</button>
+        <button class="tab-btn" data-tab="map">地图</button>
+      </div>
+      <div class="tab-content" id="tab-content"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============ 结局屏 ============ -->
+<div id="end-screen" class="screen">
+  <div class="end-box" id="end-box">
+    <h1 id="end-title"></h1>
+    <div id="end-text"></div>
+    <button class="btn" id="btn-restart">重新开始</button>
+    <button class="btn" id="btn-endtitle">回标题</button>
+  </div>
+</div>
+
+<!-- ============ 弹窗 ============ -->
+<div id="modal-mask"><div id="modal">
+  <h3 id="m-title"></h3>
+  <div class="mtext" id="m-text"></div>
+  <div class="choices" id="m-choices"></div>
+</div></div>
+
+<script>
+"use strict";
+/* ==================== 数据定义 ==================== */
+var CROPS = {
+  "菘菜":  { grow:3, yield:3, sell:2, seed:"菘菜种子" },
+  "胡瓜":  { grow:5, yield:2, sell:4, seed:"胡瓜种子" },
+  "金粟米":{ grow:8, yield:10, sell:0, seed:"金粟米种子" }
+};
+var PHASES = ["早","午","傍晚","夜"];
+var DEADLINE = 30;           // 霜降死线
+var SAVE_KEY = "shennong_save_v1";
+
+var introPages = [
+  "【序 · 离乡】\n\n吴江县，黄昏。\n父亲把最后一个包袱系在你肩上，手抖得系了三回。\n\"宫里不比田里。田里旱了能浇水，宫里……旱了，爹浇不着。\"\n\n你点头，把腰间的小布袋按了按。\n布袋里是三把家乡的菜种——他没看见。",
+  "【入宫 · 绑定】\n\n神武门的朱红宫门在晨雾里像一张合不拢的嘴。\n队尾，一个脸色发白的少女扯了扯你的袖子：\n\"姐姐也是吴江来的？我叫容儿。\"\n她冷得打颤，却把半块焐热的糕饼塞进你手里。\n\n当夜，你脑中响起冰冷的声音——\n【欢迎绑定「神农系统」。检测宿主农艺85，资质甲上；检测宿主处境：后宫，评价：地狱开局。】\n【核心条款：任务失败，即刻抹杀。】",
+  "【新手任务：种下去】\n\n在入宫第7日内，让至少一粒种子落进后宫的土里。\n▶ 奖励：积分+100\n▶ 失败：抹杀。\n\n提示：宫里每一寸土都有主。每一寸。\n\n——你望向储秀宫后墙根那片半亩荒地，握紧了布袋。"
+];
+
+var LOCS = {
+  home: { name:"储秀宫偏殿", desc:"你与容儿的住处。床头挨床头，窗外就是那半亩荒地。宫中规矩：不得私传物件，不得无事献殷勤。" },
+  fieldA:{ name:"后墙根 · 甲字田", desc:"半亩荒地，草已除尽，土是新翻的。夜里能听见御花园的更漏声。这里是你与容儿共同的秘密。" },
+  fieldB:{ name:"御花园假山后 · 乙字田", desc:"碎石地，土却肥得流油。白日盖着油布伪装，只有夜里才能动手——巡夜的灯笼随时会照过来。" },
+  garden:{ name:"御花园", desc:"奇花异石，九转回廊。全宫事件的高发之地：偶遇、落水、构陷、与……机会。酉时后，皇帝惯常经过西侧。" },
+  kitchen:{ name:"御膳房", desc:"烟火气最重的宫闱之地。总管赵公公嘴刁，却也因此——他闻得出菜的好坏。份例、采买、打点，都在此处。" },
+  queen: { name:"坤宁宫", desc:"六宫之主的地界。晨昏定省，恩威并施。你总觉得那重重帘幕后，有一双眼睛认得你。" },
+  rong:  { name:"钟粹宫", desc:"容儿被分到这里已有些时日了。她的信还通着，话却越来越少。" },
+  cold:  { name:"冷宫", desc:"废妃的院落，门轴锈死，蛛网结在匾额上。传闻先帝有一位妃子在此疯了，三十年没出来。" }
+};
+
+/* ==================== 状态 ==================== */
+var S = null;
+
+function newState(){
+  return {
+    day:1, phase:0, points:100, silver:20, hp:55,
+    favor:0, queen:0, rong:40,
+    inv:{ seeds:{ "菘菜种子":3, "胡瓜种子":2, "金粟米种子":0 }, crops:{ "菘菜":0,"胡瓜":0,"金粟米":0 } },
+    fieldA:[null,null,null,null],   // {crop,left,watered,dry}
+    fieldB:[null,null],
+    loc:"home",
+    flags:{ visitedB:false, coldKnown:false, madDone:false, nightSuit:false, fatUsed:false,
+            rongAllyEv:false, rongSickEv:false, snowNight:false, snowAns:null,
+            queenTalkEv:false, clue:0, kitchenFavor:0, price2:false, visitedColdFirst:false },
+    daily:{ tasks:[], done:{}, strikes:0 },
+    log:[],
+    over:false
+  };
+}
+
+/* ==================== 工具 ==================== */
+function $(id){ return document.getElementById(id); }
+function rnd(n){ return Math.floor(Math.random()*n); }
+function chance(p){ return Math.random()<p; }
+function showScreen(id){
+  var ss=document.querySelectorAll(".screen");
+  for(var i=0;i<ss.length;i++) ss[i].classList.remove("active");
+  $(id).classList.add("active");
+}
+function addLog(text, cls){
+  S.log.push({t:text, c:cls||""});
+  if(S.log.length>40) S.log.shift();
+  renderLog();
+}
+function renderLog(){
+  var html="";
+  for(var i=0;i<S.log.length;i++) html+='<p class="'+S.log[i].c+'">'+S.log[i].t+'</p>';
+  $("log").innerHTML=html;
+  $("log").scrollTop=$("log").scrollHeight;
+}
+function modal(title, text, choices){
+  $("m-title").innerHTML=title;
+  $("m-text").innerHTML=text;
+  var box=$("m-choices"); box.innerHTML="";
+  choices.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="btn"; b.innerHTML=c.label;
+    if(c.disabled){ b.disabled=true; if(c.reason) b.innerHTML=c.label+'<span style="color:#8a7a5a;font-size:12px">（'+c.reason+'）</span>'; }
+    else b.onclick=function(){ $("modal-mask").classList.remove("show"); if(c.fn) c.fn(); };
+    box.appendChild(b);
+  });
+  $("modal-mask").classList.add("show");
+}
+function gainPoints(n,why){ S.points+=n; addLog("【积分 "+(n>=0?"+":"")+n+"】"+(why||""),"good"); }
+function gainSilver(n,why){ S.silver+=n; addLog("【银两 "+(n>=0?"+":"")+n+"】"+(why||""), n>=0?"good":"warn"); }
+function gainHp(n,why){ S.hp=Math.max(0,Math.min(100,S.hp+n)); addLog("【体质 "+(n>=0?"+":"")+n+"】"+(why||""), n>=0?"":"warn"); }
+function gainQueen(n){ S.queen+=n; addLog("【皇后好感 "+(n>=0?"+":"")+n+"】","sys"); }
+function gainRong(n){ S.rong+=n; addLog("【容儿好感 "+(n>=0?"+":"")+n+"】","sys"); }
+
+/* ==================== 存档 ==================== */
+function saveGame(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); addLog("【已存档】","sys"); }
+  catch(e){ addLog("【存档失败】"+e,"warn"); }
+}
+function loadGame(){
+  try{
+    var raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    S=JSON.parse(raw);
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ==================== 主流程 ==================== */
+function startNew(){
+  S=newState();
+  genDaily();
+  addLog("【入宫第一日。你，沈蘅，十八岁的吴江县丞之女，腰带三把菜种。】");
+  addLog("【系统：御花园西边的土，比东边的肥。】","sys");
+  showScreen("game-screen"); render();
+  modal("新手任务：种下去","在入宫第 <b>7</b> 日内，让至少一粒种子落进后宫的土里。<br><br>▶ 奖励：积分+100　▶ 失败：抹杀<br><br><span class='sys'>提示：后墙根的甲字田，就是你的第一块田。</span>",[
+    {label:"知道了", fn:render}
+  ]);
+}
+
+function advancePhase(){
+  if(S.over) return;
+  S.phase++;
+  if(S.phase>=4){ endDay(); }
+  render();
+}
+function endDay(){
+  /* 作物生长 */
+  var grew=false, withered=0;
+  [["fieldA",0],["fieldB",1]].forEach(function(pair){
+    var f=S[pair[0]], bonus=(pair[0]==="fieldB")?1:0;
+    for(var i=0;i<f.length;i++){
+      var p=f[i]; if(!p) continue;
+      if(p.watered){ p.left-=(1+bonus); p.dry=0; p.watered=false; grew=true;
+        if(p.left<=0){ p.left=0; addLog("【作物熟了："+p.crop+"】可以收获了。","good"); } }
+      else{ p.dry++; if(p.dry>=2){ f[i]=null; withered++; } }
+    }
+  });
+  if(withered>0) addLog("有 "+withered+" 株作物缺水枯萎了……记得每日浇水。","warn");
+  /* 日常任务结算 */
+  var all=true, any=false;
+  S.daily.tasks.forEach(function(t){
+    if(S.daily.done[t.id]) any=true; else all=false;
+  });
+  if(all && S.daily.tasks.length){ gainPoints(8*S.daily.tasks.length+10,"日常任务全部完成"); }
+  else{
+    var doneCnt=0; S.daily.tasks.forEach(function(t){ if(S.daily.done[t.id]) doneCnt++; });
+    if(doneCnt>0) gainPoints(8*doneCnt,"完成部分日常");
+    else { S.daily.strikes++; addLog("今日日常任务全部未完成（连续失误 "+S.daily.strikes+"/3）。","warn"); }
+  }
+  if(S.daily.strikes>=3){ S.daily.strikes=0; gainHp(-8,"接连懈怠，夜里发起低烧"); }
+  /* 死线判定 */
+  if(S.day+1>DEADLINE && !S.flags.presented){
+    die("抹杀","霜降已过。你没有献上金粟米。<br><br>【系统：连地都种不好，不配活着。】<br><br>储秀宫后墙根，三株菘菜长得正好，没人再来收。");
+    return;
+  }
+  S.day++; S.phase=0; genDaily();
+  if(S.day===DEADLINE-5) addLog("【系统：距离霜降还有5日。金粟米种好了吗？】","sys");
+  /* 容儿来信 */
+  if(S.day%4===2) addLog("容儿捎来一封信，字迹清瘦：『宫中一切都好，勿念。姐姐的菜，可还长着？』");
+  saveGame();
+}
+function isPresentedPossible(){ return S.inv.crops["金粟米"]>0; }
+
+function genDaily(){
+  var pool=[];
+  pool.push({id:"water", name:"晨浇：给田里浇水"});
+  pool.push({id:"queen", name:"去坤宁宫请安"});
+  if(S.rong>0) pool.push({id:"rong", name:"与容儿说说话"});
+  pool.push({id:"garden", name:"去御花园走一走"});
+  if(countCrops()>0) pool.push({id:"harvest", name:"收获一次作物"});
+  pool.push({id:"sell", name:"去御膳房卖一次菜"});
+  /* 打乱取3 */
+  var picked=[];
+  while(picked.length<3 && pool.length){ picked.push(pool.splice(rnd(pool.length),1)[0]); }
+  S.daily={ tasks:picked, done:{}, strikes:S.daily.strikes||0 };
+}
+function dailyDone(id){
+  if(S.daily.tasks.some(function(t){return t.id===id;}) && !S.daily.done[id]){
+    S.daily.done[id]=true; addLog("【日常任务完成：" + idName(id) + "】","sys");
+  }
+}
+function idName(id){ var m={water:"晨浇",queen:"请安",rong:"看望容儿",garden:"御花园",harvest:"收获",sell:"卖菜"}; return m[id]||id; }
+function countCrops(){ var n=0; S.fieldA.concat(S.fieldB).forEach(function(p){ if(p) n++; }); return n; }
+function anyReady(f){ return f.some(function(p){ return p && p.left<=0; }); }
+
+/* ==================== 场景与动作 ==================== */
+function go(loc){
+  S.loc=loc;
+  addLog("—— 前往【"+LOCS[loc].name+"】 ——");
+  /* 御花园随机事件 */
+  if(loc==="garden" && chance(0.6)) gardenEvent();
+  if(loc==="cold" && chance(0.5)) coldEvent();
+  render();
+}
+
+function gardenEvent(){
+  var roll=rnd(100);
+  if(roll<25 && !S.flags.visitedB){
+    S.flags.visitedB=true;
+    modal("发现：假山后的碎石地","你在假山后拨开藤蔓，发现一片被杂草掩住的碎石地——土黑得发亮，肥得流油。<br><br>系统罕见地兴奋起来：<br><span class='sys'>【乙字田已解锁！肥沃之地：作物生长加快一日。但只可在夜里耕作，且巡夜灯笼随时会照过来。】</span>",[
+      {label:"记下了，夜里再来", fn:render}
+    ]);
+    return;
+  }
+  if(roll<40){ S.flags.coldKnown=true; S.flags.clue++;
+    gainPoints(20,"发现一枚残缺的玉佩");
+    modal("拾获：半枚玉佩","花丛下压着半枚羊脂玉佩，断口很新。凭【田埂直觉】你察觉——这附近有人长期徘徊，是个被刻意遗忘的去处。<br><br><span class='sys'>【冷宫位置已解锁。】【身世暗线「金累丝」+1】</span>",[
+      {label:"收好玉佩", fn:render}
+    ]);
+    return;
+  }
+  if(roll<55){
+    gainRong(5);
+    modal("偶遇：容儿","回廊转角，容儿提着药匣走来，见是你，眼睛一亮。<br><br>「姐姐！」她压低声音，「我什么都没瞧见。我就是想知道——宫里第一棵菜，是什么味道。」<br><br>你们交换了一个心照不宣的笑。",[
+      {label:"约定：等菜熟了，给你留最嫩的一株", fn:function(){ dailyDone("garden"); gainRong(3); render(); }}
+    ]);
+    return;
+  }
+  if(roll<70){
+    gainQueen(3);
+    modal("皇后的仪仗","凤辇自甬道缓缓而来，满园跪伏。你垂着头，闻到御用熏香底下，压着一丝极淡的、熟悉的杜蘅药香。<br><br>辇上的声音淡淡传来：「都起来吧。看着……是个安静的孩子。」<br><br>你不知道她是否在说你。",[
+      {label:"叩首领恩", fn:function(){ dailyDone("garden"); render(); }}
+    ]);
+    return;
+  }
+  if(S.phase===3){
+    modal("巡夜太监","一盏灯笼拐进回廊，正朝这边来！<br><br>你怀里还揣着刚摸到的东西。",[
+      {label:"闪身躲进假山（看运气）", fn:function(){
+        if(chance(0.6)){ addLog("你屏住呼吸，灯笼的光从你脚边扫过，有惊无险。","good"); }
+        else{ gainHp(-8,"被灯笼扫见，一路狂奔回偏殿，崴了脚"); gainQueen(-2); }
+        dailyDone("garden"); render(); }},
+      {label:"花 5 两银子打点", disabled:S.silver<5, reason:"银两不足", fn:function(){
+        gainSilver(-5,"塞给领路的小太监"); addLog("小太监掂了掂银子，把灯笼引去了别处。","good");
+        dailyDone("garden"); render(); }}
+    ]);
+    return;
+  }
+  addLog("御花园里风过花丛，香得发腻。你蹲下来捻了捻土——西边这块，确实肥。","good");
+  dailyDone("garden");
+}
+
+function coldEvent(){
+  if(!S.flags.madDone){
+    S.flags.madDone=true;
+    modal("废妃","蛛网深处坐着一个满头白发的老妇人，正对着半面铜镜梳妆，镜中无人。<br><br>「又来一个送菜的。」她头也不回，声音像锈门轴，「三十年了，她们换着花样来。这一回，送菜的是个真会种地的。」<br><br>她浑浊的眼睛突然盯住你腰间的小布袋。",[
+      {label:"献上一株自己种的菘菜", disabled:S.inv.crops["菘菜"]<1, reason:"需要菘菜×1", fn:function(){
+        S.inv.crops["菘菜"]--; S.inv.seeds["金粟米种子"]++;
+        gainPoints(50,"疯娘娘赠你一粒金粟米种子");
+        addLog("老妇人捧着菘菜看了许久，从发髻里摸出一粒金灿灿的种子拍在你手心：「金粟米。当年……祥瑞就是它。」","good");
+        render(); }},
+      {label:"躬身退走", fn:function(){ addLog("你悄然后退。老妇人的笑声在背后响起：「跑什么？你身上那股土腥味，早晚会害死你，也早晚会救你。」"); render(); }}
+    ]);
+    return;
+  }
+  if(S.phase===3 && !S.flags.nightSuit && chance(0.4)){
+    gainHp(-10,"夜探冷宫撞上巡夜");
+    addLog("巡夜的喝问声响起，你翻出断墙时划破了手臂。","warn");
+  } else {
+    addLog("疯娘娘今日清醒些。她教你：「金粟米认旧土，掺三分家乡的土，才肯好好长。」","good");
+  }
+  render();
+}
+
+/* ---- 动作定义 ---- */
+function getActions(){
+  var A=[];
+  var loc=S.loc;
+  if(loc==="home"){
+    A.push({label:"休息（体质+12）", fn:function(){ gainHp(12,"睡了个踏实觉"); advancePhase(); }});
+    A.push({label:"做些针线活（银两+2）", fn:function(){ gainSilver(2,"绣了几个帕子"); advancePhase(); }});
+    A.push({label:"整理母亲的遗物", fn:function(){
+      if(chance(0.25)){ S.flags.clue++; gainPoints(15,"旧匣底层又发现一枚金累丝指甲套");
+        modal("遗物","夹层里又是一枚金累丝指甲套——和皇后护甲上的纹样，一模一样。<br><br><span class='sys'>【身世暗线「金累丝」进度提升：当前 "+S.flags.clue+"】</span>",[{label:"收好",fn:render}]);
+      } else addLog("母亲的旧物平平无奇。你摩挲着指甲套上的纹路，心里发沉。");
+      advancePhase(); }});
+  }
+  if(loc==="fieldA"||loc==="fieldB"){
+    var f=S[loc], fname=LOCS[loc].name;
+    var nightOnly=(loc==="fieldB" && S.phase!==3);
+    A.push({label:"浇水", disabled:(!f.some(function(p){return p&&!p.watered;})), reason:"作物已浇过",
+      fn:function(){ f.forEach(function(p){ if(p) p.watered=true; }); addLog("井水沁凉。你一株一株浇过去，像在跟它们说话。"); dailyDone("water"); advancePhase(); }});
+    Object.keys(S.inv.seeds).forEach(function(seed){
+      var crop=seed.replace("种子","");
+      if(CROPS[crop]===undefined) crop=seed.slice(0,-3);
+      A.push({label:"播种 · "+seed+"（剩 "+S.inv.seeds[seed]+"）",
+        disabled:(S.inv.seeds[seed]<1 || !f.some(function(p){return !p;}) || nightOnly),
+        reason: nightOnly?"只在夜里可耕作":(S.inv.seeds[seed]<1?"种子不足":"田垄已满"),
+        fn:function(){
+          var idx=f.findIndex(function(p){return !p;});
+          var grow=CROPS[crop].grow-(loc==="fieldB"?1:0);
+          f[idx]={crop:crop, left:grow, watered:false, dry:0};
+          S.inv.seeds[seed]--;
+          addLog("【种下"+crop+"】"+fname+"，第"+(idx+1)+"垄。旧土认菜，菜才肯长。","good");
+          if(loc==="fieldB"){
+            var risk=S.flags.nightSuit?0.10:(S.flags.rongAllyEv?0.20:0.40);
+            if(chance(risk)){ gainHp(-12,"巡夜灯笼照见了假山上的影子，你翻墙时摔伤了"); gainQueen(-2);
+              addLog("远处传来喝问声。你伏在碎石地里不敢动弹，指甲抠进土里。","warn"); }
+          }
+          advancePhase(); }});
+    });
+    A.push({label:"收获（熟了的都收）", disabled:!anyReady(f), reason:"暂无成熟作物",
+      fn:function(){
+        var msg=[];
+        f.forEach(function(p,i){ if(p&&p.left<=0){ S.inv.crops[p.crop]+=CROPS[p.crop].yield; msg.push(p.crop+"×"+CROPS[p.crop].yield); f[i]=null; }});
+        addLog("【收获】"+msg.join("、")+"——菜叶上的露水还没干。","good");
+        dailyDone("harvest"); advancePhase(); }});
+    A.push({label:"查看田情", free:true, fn:render});
+  }
+  if(loc==="garden"){
+    if(S.flags.visitedB) A.push({label:"去假山后（乙字田）", fn:function(){ S.loc="fieldB"; addLog("—— 前往【乙字田】 ——"); render(); }});
+    A.push({label:"酉时西侧“赏花”（赌一把偶遇）", disabled:S.phase===3, reason:"夜里太危险",
+      fn:function(){
+        if(chance(0.35)){ S.favor+=10; gainPoints(30,"西侧甬道，你与一位清俊的玄衣男子擦肩。他问：『这土，你方才捻过了？』");
+          modal("偶遇","玄衣男子蹲在假山边，竟也在看土。「江南的土偏酸，」他头也不抬，「这里的土碱。你倒捻得有滋有味。」<br><br>他走后，一个小太监追上来低声道：「那是——」又死死捂住了嘴。<br><br><span class='sys'>【圣宠+10。有人记住你的名字了。】</span>",[{label:"心跳如鼓",fn:function(){dailyDone("garden");render();}}]);
+        } else { addLog("你「赏」了一下午花，什么也没发生。倒是记住了西侧哪块土肥。"); }
+        advancePhase(); }});
+  }
+  if(loc==="kitchen"){
+    A.push({label:"找赵总管卖菜", fn:function(){
+      var total=0, msg=[];
+      ["菘菜","胡瓜"].forEach(function(c){
+        if(S.inv.crops[c]>0){ var n=S.inv.crops[c], p=CROPS[c].sell*(S.flags.price2?2:1); total+=n*p; msg.push(c+"×"+n); S.inv.crops[c]=0; }
+      });
+      if(total===0){ addLog("你两手空空。赵公公眼皮都没抬：『小主，御膳房不做无米之炊。』"); }
+      else{
+        gainSilver(total,"卖出 "+msg.join("、"));
+        if(!S.flags.kitchenFavor){ S.flags.kitchenFavor++; modal("赵总管的鼻子","赵公公拈起一根菘菜，鼻翼动了动，眼睛眯起来。<br><br>「这菜……宫里的土种不出这个味儿。」他慢悠悠道，「小主往后有菜，尽可送来。咱家，出双倍价。」<br><br><span class='sys'>【御膳房收购价翻倍！】</span>",[{label:"谢过公公",fn:render}]); S.flags.price2=true; }
+      }
+      dailyDone("sell"); advancePhase(); }});
+    A.push({label:"打点小太监（银两-5，探消息）", disabled:S.silver<5, reason:"银两不足",
+      fn:function(){
+        gainSilver(-5,"塞进小太监袖口");
+        var tips=["『皇后娘娘每月初七去宝华殿进香，那日心情最好。』","『御花园西角门夜里不设锁，知道的人不多。』","『冷宫的疯娘娘，当年是伺候先皇后的人……』","『金粟米？没听过。只听说太医院的雪参，是先头那位娘娘留下的种。』"];
+        addLog("小太监压低声音："+tips[rnd(tips.length)],"good");
+        if(!S.flags.coldKnown && chance(0.3)){ S.flags.coldKnown=true; addLog("【冷宫位置已解锁】","sys"); }
+        advancePhase(); }});
+  }
+  if(loc==="queen"){
+    A.push({label:"晨省请安（仅早时）", disabled:S.phase!==0, reason:"只在早时进行",
+      fn:function(){ gainQueen(2); dailyDone("queen"); addLog("你随众嫔妃垂手侍立。皇后今日多看了你一眼，没说什么。");
+        if(S.queen>=10 && !S.flags.queenTalkEv){ S.flags.queenTalkEv=true; S.flags.clue++;
+          modal("皇后问话","请安毕，皇后忽然叫住你：「沈家的？」<br><br>你心头一跳，垂目应是。<br><br>她拨着护甲，良久：「你母亲……是个什么样的人？」<br><br>你答『温婉贤淑』。她轻轻笑了一声，听不出意味：「是么。」<br><br><span class='sys'>【她手上的金累丝护甲，和母亲遗物一模一样。】</span>",[{label:"退出坤宁宫，后背发凉",fn:function(){dailyDone("queen");advancePhase();}}]);
+          return; }
+        advancePhase(); }});
+    A.push({label:"求见皇后", disabled:S.phase===0, reason:"早时是晨省时辰",
+      fn:function(){
+        if(S.inv.crops["金粟米"]>0){
+          S.flags.presented=true; winGame();
+        } else {
+          addLog("皇后称乏，不见。回廊上，你听见里头传出一句淡淡的：『让她等着。』");
+          advancePhase(); }}});
+  }
+  if(loc==="rong"){
+    A.push({label:"探望容儿", fn:function(){
+      if(S.rong>=60 && !S.flags.snowNight){ snowNightEvent(); return; }
+      if(S.rong>=45 && !S.flags.rongSickEv && chance(0.5)){ sickEvent(); return; }
+      if(S.rong>=20 && !S.flags.rongAllyEv){ allyEvent(); return; }
+      gainRong(4);
+      var chats=["容儿教你认宫里各处的路，末了低声说：『假山后我替你看着，你放心。』","她说钟粹宫的娘娘赏了她一匹料子，她转手缝成了两个布袋：『装种子正好。』","她咳嗽了两声，笑：『别担心，老毛病。倒是你，黑了，也壮了。』"];
+      addLog(chats[rnd(chats.length)],"good");
+      dailyDone("rong"); advancePhase(); }});
+    A.push({label:"给容儿送菜（菘菜×1，好感+8）", disabled:S.inv.crops["菘菜"]<1, reason:"需要菘菜×1",
+      fn:function(){ S.inv.crops["菘菜"]--; gainRong(8); addLog("容儿捧着那株带露水的菘菜看了半天：『原来……是这么绿的东西。』"); dailyDone("rong"); advancePhase(); }});
+  }
+  if(loc==="cold"){
+    A.push({label:"夜探废殿", disabled:S.phase!==3, reason:"白日人多眼杂",
+      fn:function(){ coldEvent(); advancePhase(); }});
+  }
+  return A;
+}
+
+function snowNightEvent(){
+  S.flags.snowNight=true;
+  modal("雪夜","今夜落了今冬第一场雪。容儿披着斗篷站在你偏殿外，睫毛上全是霜。<br><br>她忽然问：「蘅姐姐，若有一天，翻案要踩着你的田过去——你让不让我踩？」",[
+    {label:"『让。』", fn:function(){ S.flags.snowAns="A"; gainRong(10);
+      addLog("她怔了怔，忽然笑了，笑得眼泪掉下来：『姐姐，你是这个宫里，唯一一个先答让的人。』","good");
+      dailyDone("rong"); advancePhase(); }},
+    {label:"『不让。』", fn:function(){ S.flags.snowAns="B"; gainRong(-10);
+      addLog("她点点头，把斗篷拢紧：『我知道了。』她走得很慢，雪地里一行脚印，没有再回头。","warn");
+      dailyDone("rong"); advancePhase(); }},
+    {label:"岔开话题", fn:function(){ S.flags.snowAns="C";
+      addLog("你给她倒了碗热汤。她捧着碗，笑了笑，没再问——眼底有什么东西，悄悄合上了。");
+      dailyDone("rong"); advancePhase(); }}
+  ]);
+}
+function sickEvent(){
+  S.flags.rongSickEv=true;
+  modal("她病了","容儿高热三日，药却被人扣在太医院。你赶到时，她烧得说胡话，手里攥着你的信。",[
+    {label:"送解毒丹（积分-120）", disabled:S.points<120, reason:"积分不足", fn:function(){
+      S.points-=120; gainRong(15);
+      addLog("丹药灌下去，她半夜退了烧。醒来第一句话：『姐姐……我又欠你一次。』","good");
+      dailyDone("rong"); advancePhase(); }},
+    {label:"送菘菜熬汤", disabled:S.inv.crops["菘菜"]<1, reason:"需要菘菜×1", fn:function(){
+      S.inv.crops["菘菜"]--; gainRong(8);
+      addLog("一碗菜汤吊住了人。太医来看了，嘟囔：『什么土方子，倒对症。』","good");
+      dailyDone("rong"); advancePhase(); }},
+    {label:"只能陪着她", fn:function(){ gainRong(3); addLog("你守了一夜。她醒来见你还在，眼睛红了红，什么都没说。","good");
+      dailyDone("rong"); advancePhase(); }}
+  ]);
+}
+function allyEvent(){
+  S.flags.rongAllyEv=true;
+  modal("同谋","容儿帮你望风回来，掸着袖子上的土，忽然说：<br><br>「姐姐，我都知道的。从第一天就知道。」<br><br>「这宫里人人想往上爬。只有你，蹲在地里的时候，是全宫最踏实的人。」<br><br><span class='sys'>【同谋已确认：乙字田耕作被发现的概率降低！】</span>",[
+    {label:"握住她的手", fn:function(){ gainRong(10); dailyDone("rong"); advancePhase(); }}
+  ]);
+}
+
+/* ==================== 商城 ==================== */
+var SHOP=[
+  {id:"fat", name:"加速肥", cost:60, desc:"一夜之间，所有已浇水作物多生长一日。一次性。"},
+  {id:"info", name:"情报 · 冷宫位置", cost:60, desc:"解锁冷宫地图。废妃手里，也许有你要的种子。"},
+  {id:"suit", name:"夜行衣", cost:150, desc:"乙字田与夜探被发现的概率大幅降低。"},
+  {id:"gseed", name:"金粟米种子", cost:300, desc:"主线必需。霜降前种出10株，献入坤宁宫。"},
+  {id:"pill", name:"解毒丹", cost:120, desc:"体质+20，或在关键时刻救容儿一命。"},
+  {id:"amulet", name:"免罪金牌", cost:500, desc:"抵消一次死罪——但本系统不保证有第二次。"}
+];
+function buyItem(id){
+  var it=SHOP.find(function(x){return x.id===id;});
+  if(S.points<it.cost){ addLog("积分不足。","warn"); return; }
+  S.points-=it.cost;
+  if(id==="fat"){
+    var used=false;
+    ["fieldA","fieldB"].forEach(function(k){ S[k].forEach(function(p){ if(p&&p.watered){p.left=Math.max(0,p.left-1);used=true;} }); });
+    addLog(used?"【加速肥生效】作物蹿了一截。":"【加速肥】没有正在生长的作物，肥力存进了土里（明日浇水后生效——算是浪费了）。","good");
+  }
+  if(id==="info"){ S.flags.coldKnown=true; addLog("【冷宫位置已解锁】","sys"); }
+  if(id==="suit"){ S.flags.nightSuit=true; addLog("【夜行衣已装备】夜色里，你像一道影子。","sys"); }
+  if(id==="gseed"){ S.inv.seeds["金粟米种子"]++; addLog("【获得金粟米种子×1】它在你掌心泛着微光。","good"); }
+  if(id==="pill"){ gainHp(20,"服下解毒丹"); }
+  if(id==="amulet"){ addLog("【免罪金牌】入手沉甸甸的。但愿用不上。","good"); S.flags.amulet=(S.flags.amulet||0)+1; }
+  render();
+}
+
+/* ==================== 渲染 ==================== */
+function render(){
+  if(!S||S.over) return;
+  $("h-day").textContent=S.day;
+  $("h-phase").textContent=PHASES[S.phase];
+  $("h-points").textContent=S.points;
+  $("h-silver").textContent=S.silver;
+  $("s-hp").textContent=S.hp; $("b-hp").style.width=S.hp+"%";
+  $("s-favor").textContent=S.favor; $("s-queen").textContent=S.queen;
+  $("s-rong").textContent=S.rong; $("s-silver").textContent=S.silver; $("s-points").textContent=S.points;
+  var L=LOCS[S.loc];
+  $("loc-name").textContent=L.name;
+  $("loc-desc").textContent=L.desc;
+  var box=$("actions"); box.innerHTML="";
+  getActions().forEach(function(a){
+    var b=document.createElement("button");
+    b.className="btn small"; b.innerHTML=a.label;
+    if(a.disabled){ b.disabled=true; b.innerHTML=a.label+'<span style="font-size:11px;color:#8a7a5a">（'+a.reason+'）</span>'; }
+    b.onclick=a.fn;
+    box.appendChild(b);
+  });
+  renderLog(); renderTab();
+}
+var curTab="quest";
+function renderTab(){
+  var c=$("tab-content");
+  if(curTab==="quest"){
+    var html="";
+    html+='<div class="quest"><div class="qname">主线 · 金粟献瑞</div><div class="qdesc">';
+    html+='霜降前（第'+DEADLINE+'日前）种出金粟米10株，携收获的金粟米前往坤宁宫「求见皇后」献上。<br>';
+    html+='种子来源：商城300积分 / 冷宫废妃。<br>状态：';
+    if(S.flags.presented) html+='<b style="color:#9fd49f">已完成</b>';
+    else if(S.inv.crops["金粟米"]>0) html+='<b style="color:#ffe9b0">已收获，等待献瑞！</b>';
+    else if(S.fieldA.concat(S.fieldB).some(function(p){return p&&p.crop==="金粟米";})) html+='<b style="color:#d8b96f">种植中……</b>';
+    else if(S.inv.seeds["金粟米种子"]>0) html+='<b style="color:#d8b96f">已有种子，待播种</b>';
+    else html+='<b style="color:#d98c8c">尚无种子</b>';
+    html+='</div></div>';
+    html+='<div class="quest"><div class="qname">新手任务 · 种下去</div><div class="qdesc done">已完成。种子落土那天，你在宫里有了第一个秘密。</div></div>';
+    html+='<div class="quest"><div class="qname">日常任务（今日）</div><div class="qdesc">';
+    S.daily.tasks.forEach(function(t){
+      html+=(S.daily.done[t.id]?"☑ ":"☐ ")+t.name+"<br>";
+    });
+    html+="全部完成奖励：积分+"+(8*S.daily.tasks.length+10)+"</div></div>";
+    html+='<div class="quest"><div class="qname">身世暗线 · 金累丝</div><div class="qdesc">进度：'+S.flags.clue+'。母亲的死，皇后的护甲，冷宫的废妃……线索正在合拢。</div></div>';
+    c.innerHTML=html;
+  }
+  if(curTab==="bag"){
+    var h="";
+    h+='<div class="item-row"><span style="color:#d8b96f">种子</span><span></span></div>';
+    Object.keys(S.inv.seeds).forEach(function(k){ h+='<div class="item-row"><span>'+k+'</span><span>× '+S.inv.seeds[k]+'</span></div>'; });
+    h+='<div class="item-row" style="margin-top:8px"><span style="color:#d8b96f">收获物</span><span></span></div>';
+    Object.keys(S.inv.crops).forEach(function(k){ h+='<div class="item-row"><span>'+k+'</span><span>× '+S.inv.crops[k]+'</span></div>'; });
+    if(S.flags.clue>0) h+='<div class="item-row" style="margin-top:8px"><span style="color:#d8b96f">特殊</span><span></span></div><div class="item-row"><span>金累丝指甲套</span><span>× '+S.flags.clue+'</span></div>';
+    if(S.flags.amulet) h+='<div class="item-row"><span>免罪金牌</span><span>× '+S.flags.amulet+'</span></div>';
+    c.innerHTML=h;
+  }
+  if(curTab==="shop"){
+    var h="";
+    SHOP.forEach(function(it){
+      h+='<div class="shop-item"><span class="sname">'+it.name+'　<small style="color:#d8b96f">'+it.cost+' 积分</small></span>';
+      h+='<div style="color:#a89876;font-size:12px;margin:4px 0">'+it.desc+'</div>';
+      h+='<button class="btn small" onclick="buyItem(\''+it.id+'\')" '+(S.points<it.cost?"disabled":"")+'>兑换</button></div>';
+    });
+    c.innerHTML=h;
+  }
+  if(curTab==="rong"){
+    var rel = S.rong>=80?"生死之交":S.rong>=60?"推心置腹":S.rong>=40?"同谋知己":S.rong>=20?"互有默契":"泛泛之交";
+    var h='<div class="stat-row"><span>当前关系</span><b>'+rel+'（'+S.rong+'）</b></div>';
+    h+='<p style="color:#a89876;font-size:12px;margin:10px 0;line-height:1.9">';
+    h+="温婉柔韧，记性极好。分住钟粹宫后，信还通着，话越来越少。<br>";
+    if(S.flags.snowNight){ h+="雪夜已至，她问过那个问题。你的答案："+(S.flags.snowAns==="A"?"『让。』":S.flags.snowAns==="B"?"『不让。』":"你岔开了话题。")+"<br>"; }
+    if(S.flags.rongAllyEv) h+="她知道你的秘密，仍替你守着假山。<br>";
+    h+='</p><p style="font-size:12px;color:#8a7a5a">好感达 60 时，某个雪夜，她会来问你一个问题。</p>';
+    c.innerHTML=h;
+  }
+  if(curTab==="map"){
+    var h="", list=[["home","住所"],["fieldA","甲字田"],["garden","御花园"],["kitchen","御膳房"],["queen","坤宁宫"],["rong","钟粹宫（容儿）"]];
+    if(S.flags.visitedB) list.push(["fieldB","乙字田（夜）"]);
+    if(S.flags.coldKnown) list.push(["cold","冷宫（夜）"]);
+    list.forEach(function(pair){
+      h+='<button class="btn small mapbtn" onclick="go(\''+pair[0]+'\')">'+pair[1]+(S.loc===pair[0]?"　◀ 当前":"")+'</button>';
+    });
+    c.innerHTML=h;
+  }
+}
+
+/* ==================== 结局 ==================== */
+function die(title, text){
+  S.over=true;
+  $("end-box").className="end-box death";
+  $("end-title").textContent=title;
+  $("end-text").innerHTML="<p>"+text+"</p><p style='color:#8a7a5a;font-size:13px'>存活 "+S.day+" 日 · 积分 "+S.points+" · 金累丝线索 "+S.flags.clue+" / 3</p>";
+  showScreen("end-screen");
+  localStorage.removeItem(SAVE_KEY);
+}
+function winGame(){
+  S.over=true; S.flags.presented=true;
+  saveGame();
+  var extra="";
+  if(S.flags.snowAns==="A") extra+="<p>献瑞那日，容儿站在人群里，冲你眨了眨眼。当晚她捎来一张字条：『姐姐，你的田，我永远不踩。』</p>";
+  if(S.flags.snowAns==="B") extra+="<p>人群深处，容儿远远望着你，神色复杂。你们之间，隔的已不止一座坤宁宫。</p>";
+  if(S.flags.snowAns==="C") extra+="<p>容儿没有来。据说她病了。你知道，有些话题一旦岔开，就再也接不回去了。</p>";
+  if(S.flags.madDone && S.inv.seeds["金粟米种子"]===0) extra+="<p>没人知道，那粒祥瑞的种子，来自一个疯了三十年的人。她当晚梳好了头，睡得很安稳。</p>";
+  $("end-box").className="end-box win";
+  $("end-title").textContent="第一章 · 完";
+  $("end-text").innerHTML="<p>金粟米呈上坤宁宫那日，满宫称祥瑞。皇后拨着护甲，看了你很久：『沈家的女儿……倒有几分她母亲当年的样子。』</p><p>【晋位：答应。积分+500。】</p>"+extra+"<p style='color:#8a7a5a;font-size:13px'>用时 "+S.day+" 日 · 剩余积分 "+S.points+" · 体质 "+S.hp+" · 金累丝线索 "+S.flags.clue+" / 3</p><p style='color:#8a7a5a;font-size:13px'>（第二章 · 扎根，敬请期待）</p>";
+  showScreen("end-screen");
+  localStorage.removeItem(SAVE_KEY);
+}
+
+/* ==================== 事件绑定 ==================== */
+document.querySelectorAll(".tab-btn").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll(".tab-btn").forEach(function(x){x.classList.remove("on");});
+    b.classList.add("on"); curTab=b.dataset.tab; renderTab();
+  };
+});
+$("btn-new").onclick=function(){
+  if(localStorage.getItem(SAVE_KEY) && !confirm("已有存档，开始新游戏将覆盖存档。继续？")) return;
+  showIntro(0);
+};
+$("btn-continue").onclick=function(){
+  if(loadGame()){ showScreen("game-screen"); render(); addLog("【读档成功】第 "+S.day+" 日。","sys"); }
+  else alert("没有找到存档。");
+};
+$("btn-save").onclick=saveGame;
+$("btn-quit").onclick=function(){ saveGame(); showScreen("title-screen"); refreshTitle(); };
+$("btn-restart").onclick=function(){ localStorage.removeItem(SAVE_KEY); showIntro(0); };
+$("btn-endtitle").onclick=function(){ showScreen("title-screen"); refreshTitle(); };
+$("btn-help0").onclick=showHelp;
+$("btn-help").onclick=showHelp;
+function showHelp(){
+  modal("玩法说明","<b>目标</b>：在第 "+DEADLINE+" 日（霜降）前种出金粟米并献入坤宁宫，晋位答应。超时即抹杀。<br><br><b>行动</b>：每个时辰可行动一次（早/午/傍晚/夜），在「地图」栏移动。移动不耗时，行动耗时。<br><br><b>种田</b>：播种→每日浇水→成熟后收获。缺水两日作物枯萎。乙字田肥沃但只在夜里可耕作，有被发现的风险。<br><br><b>金粟米种子</b>：商城300积分，或夜探冷宫找废妃。<br><br><b>日常任务</b>：每日刷新3条，完成得积分。连续整日懈怠会病倒。<br><br><b>容儿</b>：好感满60触发雪夜事件。你的选择，决定她的结局线。",[
+    {label:"明白了"}
+  ]);
+}
+function refreshTitle(){
+  $("btn-continue").disabled=!localStorage.getItem(SAVE_KEY);
+}
+/* 序章翻页 */
+var introIdx=0;
+function showIntro(i){
+  introIdx=i;
+  if(i>=introPages.length){ startNew(); return; }
+  showScreen("intro-screen");
+  $("intro-text").innerHTML="<p style='white-space:pre-line'>"+introPages[i]+"</p><br>";
+  var b=document.createElement("button");
+  b.className="btn"; b.textContent=(i===introPages.length-1)?"入宫 →":"继续";
+  b.onclick=function(){ showIntro(i+1); };
+  $("intro-text").appendChild(b);
+}
+refreshTitle();
+</script>
+</body>
+</html>
